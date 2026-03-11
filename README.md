@@ -6,6 +6,7 @@ Kozo Scanner is the open-source engine powering **[Kozo](https://kozo.one)** —
 
 It processes uploaded project zips (or GitHub repo contents) entirely **in memory**, never persisting or transmitting your code to third parties. The logic is fully visible so you can verify exactly what is — and isn't — being checked.
 
+We open-sourced our scanner so you can verify that we never see your raw code. We analyze your project's health locally in your browser and only receive the metadata needed to build your Constitution.
 ---
 
 ## ✨ Features
