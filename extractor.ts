@@ -58,6 +58,23 @@ const BINARY_EXTS = new Set(['png','jpg','jpeg','gif','ico','woff','woff2','ttf'
 const SKIP_SECRET_EXTS = new Set(['md', 'txt', 'lock', 'sum', 'png', 'jpg', 'svg', 'ico', 'woff', 'woff2'])
 const SKIP_SECRET_FILES = new Set(['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb'])
 
+// Placeholder emails and domains that are safe to use and should not trigger false positives
+const PLACEHOLDER_PATTERNS = [
+  /user@example\.com/i,
+  /test@example\.com/i,
+  /admin@example\.com/i,
+  /demo@example\.com/i,
+  /placeholder@example\.com/i,
+  /noreply@example\.com/i,
+  /contact@example\.com/i,
+  /support@example\.com/i,
+  /info@example\.com/i,
+  /test@test\./i,
+  /admin@localhost/i,
+  /test@localhost/i,
+  /@example\./i, // catch-all for any @example.* domain
+]
+
 // ---------- Secret patterns ----------
 // IMPORTANT: patterns match on the line to detect the *presence* of a secret type.
 // The preview is always redacted before being added to Vitals — raw values never leave the browser.
@@ -109,6 +126,11 @@ function scanLineForSecrets(filePath: string, lines: string[]): SecretFinding[] 
     for (const pattern of SECRET_PATTERNS) {
       if (pattern.severity === 'medium' && !isEnvFile && !line.toLowerCase().includes('=')) continue
       if (pattern.regex.test(line)) {
+        // Special handling for email addresses: skip if it matches a placeholder pattern
+        if (pattern.name === 'Email Address (hardcoded)') {
+          if (PLACEHOLDER_PATTERNS.some(p => p.test(line))) continue
+        }
+
         // Redact: replace any quoted string 6+ chars with [REDACTED] before storing
         const redacted = line.trim().slice(0, 80)
           .replace(/['"][^'"]{6,}['"]/g, '"[REDACTED]"')
